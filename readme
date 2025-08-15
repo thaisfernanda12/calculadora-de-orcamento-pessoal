@@ -1,0 +1,83 @@
+src/
+ ├── App.js
+ ├── components/
+ │     ├── Input.js
+ │     ├── Botao.js
+ │     └── Resumo.js
+ ├── index.js
+ └── App.css
+
+import React, { useState } from "react";
+import Input from "./components/Input";
+import Botao from "./components/Botao";
+import Resumo from "./components/Resumo";
+import "./App.css";
+
+export default function App() {
+  const [transacoes, setTransacoes] = useState([]);
+  const [descricao, setDescricao] = useState("");
+  const [valor, setValor] = useState("");
+  const [tipo, setTipo] = useState("receita"); // receita ou despesa
+
+  const handleAdd = () => {
+    if (!descricao || !valor) return alert("Preencha todos os campos!");
+
+    const novaTransacao = {
+      id: Date.now(),
+      descricao,
+      valor: parseFloat(valor),
+      tipo,
+    };
+
+    setTransacoes([...transacoes, novaTransacao]);
+    setDescricao("");
+    setValor("");
+  };
+
+  const saldo = transacoes.reduce((acc, item) => {
+    return item.tipo === "receita" ? acc + item.valor : acc - item.valor;
+  }, 0);
+
+  return (
+    <div className="app">
+      <h1>Calculadora de Orçamento Pessoal</h1>
+
+      <div className="form">
+        <Input
+          label="Descrição"
+          value={descricao}
+          onChange={(e) => setDescricao(e.target.value)}
+        />
+        <Input
+          label="Valor"
+          type="number"
+          value={valor}
+          onChange={(e) => setValor(e.target.value)}
+        />
+        <div className="select-container">
+          <label>Tipo:</label>
+          <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
+            <option value="receita">Receita</option>
+            <option value="despesa">Despesa</option>
+          </select>
+        </div>
+        <Botao onClick={handleAdd}>Adicionar</Botao>
+      </div>
+
+      {transacoes.length === 0 ? (
+        <p className="mensagem">Nenhuma transação registrada.</p>
+      ) : (
+        <>
+          <ul className="lista">
+            {transacoes.map((t) => (
+              <li key={t.id} className={t.tipo}>
+                {t.descricao} - R$ {t.valor.toFixed(2)}
+              </li>
+            ))}
+          </ul>
+          <Resumo saldo={saldo} />
+        </>
+      )}
+    </div>
+  );
+}
